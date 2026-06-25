@@ -1,316 +1,323 @@
-# Pinote Design Guidelines
+# Penote Design System for AI-Generated Flutter UI
 
-## 1. Design Philosophy
+## 1. Purpose
 
-Pinote adalah aplikasi To-Do List modern yang dirancang untuk membantu pengguna mengelola tugas dengan cepat, tenang, dan tanpa hambatan. Fokus utama desain adalah:
+Dokumen ini ditulis agar AI dapat menghasilkan UI Flutter untuk aplikasi Penote dengan hasil yang modern, konsisten, dan siap dipakai. Fokus desain adalah pengalaman pengguna yang terasa hangat, bersih, premium, dan produktif.
 
-- Kemudahan penggunaan
-- Produktivitas yang terasa alami
-- Visual yang bersih, hangat, dan modern
-- Pengalaman yang nyaman untuk penggunaan jangka panjang
-- Konsistensi antar layar dan komponen
-
-Gaya visual yang diusung adalah Modern, Clean, Minimalist, dan User Friendly. Desain harus terasa lembut, warm, dan tidak membebani mata, sambil tetap menjaga kejelasan informasi dan hierarki visual yang kuat.
+Panduan ini harus diperlakukan sebagai instruksi visual yang wajib diikuti. Saat membuat kode, AI harus menghasilkan tampilan yang terasa seperti aplikasi kelas atas, bukan tampilan sederhana atau kuno.
 
 ---
 
-## 2. Color Palette
+## 2. Product Identity
+
+- Nama aplikasi: Penote
+- Jenis aplikasi: To-Do List & Task Management
+- Nuansa visual: modern, clean, minimal, friendly, warm, premium
+- Tujuan utama: membuat pengguna merasa nyaman saat mengatur tugas, agenda, dan aktivitas harian
+
+Brand tone yang diinginkan:
+- Hangat dan tidak kaku
+- Bersih dan tidak berantakan
+- Elegan tetapi tetap ramah
+- Fokus pada kenyamanan visual dan alur kerja yang mudah
+
+---
+
+## 3. Design Philosophy
+
+Desain Penote harus memiliki karakter berikut:
+- Visual yang lembut, bersih, dan tidak terlalu padat
+- Hierarki informasi jelas
+- Tombol dan elemen interaktif terlihat menonjol
+- Layout tidak terlalu formal, tetapi tetap modern
+- Semua elemen harus terasa terukur, proporsional, dan konsisten
+
+Gunakan prinsip berikut saat membuat UI:
+- Prioritaskan isi yang paling penting
+- Beri ruang kosong yang cukup agar tidak terasa sesak
+- Gunakan rounded corners dan shadow halus untuk kesan premium
+- Hindari tampilan yang terlalu flat atau terlalu sederhana
+
+---
+
+## 4. Color System
 
 ### Primary Color
-- Primary Color: #F7E9CF
-- Digunakan sebagai warna dominan untuk latar utama, elemen brand, dan area yang ingin terasa hangat dan nyaman.
+- Primary: #F7E9CF
+- Digunakan sebagai warna dominan untuk background utama, splash screen, dan area branding
 
-### Supporting Colors
+### Supporting Palette
 
-| Role | Color | Usage |
+| Role | Color | Use |
 |---|---|---|
-| Secondary Background | #F5EFE6 | Background panel, section container |
+| Secondary Background | #F5EFE6 | Section background, panel lembut |
 | Surface / Card | #FFFDF8 | Card, modal, list item |
-| Primary Button | #8A5A44 | CTA utama, action utama |
-| Secondary Button | #E8D8C2 | Button alternatif, tindakan sekunder |
+| Primary Button | #8A5A44 | Tombol utama / CTA |
+| Secondary Button | #E8D8C2 | Tombol alternatif |
+| FAB | #A96A46 | Tombol tambah tugas |
 | App Bar | #FFF6E5 | Header area |
-| Floating Action Button | #A96A46 | Tombol tambah tugas |
-| Icon Color | #6F4E37 | Ikon aktif dan navigasi |
+| Icon Active | #6F4E37 | Ikon utama |
 | Text Primary | #2F241D | Teks utama |
 | Text Secondary | #6E6258 | Teks penjelas |
-| Border / Divider | #D8CDBE | Garis pembatas dan outline |
+| Border / Divider | #D8CDBE | Garis pembatas |
 | Success | #4F9D69 | Status selesai |
-| Warning | #D9872F | Status menunggu / perhatian |
-| Error | #C94F4F | Error / gagal |
-| Info | #4A90E2 | Informasi tambahan |
-| Text Field Fill | #FCF8F1 | Input field background |
+| Warning | #D9872F | Status perhatian |
+| Error | #C94F4F | Error |
+| Field Fill | #FCF8F1 | Background input |
 
-### Accessibility Notes
-- Pastikan semua teks memiliki kontras yang cukup sesuai WCAG.
-- Target minimal:
-  - Body text: contrast ratio ≥ 4.5:1
-  - Large text / UI elements: contrast ratio ≥ 3:1
-- Hindari penggunaan warna saja sebagai satu-satunya penanda status. Sertakan ikon atau label tambahan.
+### Accessibility Requirement
+- Semua teks harus memiliki kontras yang cukup sesuai WCAG AA
+- Body text minimal 4.5:1 contrast ratio
+- Elemen UI besar minimal 3:1 contrast ratio
+- Jangan mengandalkan warna saja untuk menyampaikan status
 
 ---
 
-## 3. Typography System
+## 5. Typography System
 
 ### Font Family
-- Primary Font: Poppins
-- Gunakan Google Fonts: Poppins
+- Gunakan Google Fonts Poppins
 
 ### Type Scale
 
 | Element | Size | Weight | Line Height |
 |---|---:|---|---:|
-| Heading 1 | 32px | 700 | 40px |
-| Heading 2 | 24px | 600 | 32px |
-| Heading 3 | 20px | 600 | 28px |
-| Subheading | 18px | 500 | 26px |
+| Display / Hero | 32px | 700 | 40px |
+| Heading | 24px | 600 | 32px |
+| Subheading | 18px | 600 | 26px |
 | Body Large | 16px | 400 | 24px |
 | Body Regular | 14px | 400 | 22px |
 | Caption | 12px | 400 | 18px |
-| Button | 14px or 16px | 600 | 20px |
+| Button | 14px–16px | 600 | 20px |
 
 ### Typography Rules
-- Gunakan font weight 400 untuk teks normal, 500 untuk subheading, 600–700 untuk judul penting.
-- Line height yang nyaman: 1.4–1.6 untuk body text.
-- Hindari teks terlalu padat; pastikan spasi antar baris cukup lega.
-- Untuk tombol, gunakan ukuran yang jelas dan konsisten.
+- Gunakan font weight 400 untuk teks biasa
+- Gunakan 500–600 untuk subheading dan label penting
+- Gunakan 700 untuk judul utama
+- Line height body: 1.4–1.6
+- Hindari teks terlalu rapat atau terlalu kecil
 
 ---
 
-## 4. Spacing System
+## 6. Spacing System
 
-Gunakan sistem spacing berbasis 8px grid untuk menjaga konsistensi visual.
+Gunakan sistem spacing 8px grid.
 
 ### Spacing Scale
-- 4px: ruang tipis antar elemen kecil
+- 4px: ruang kecil antar elemen
 - 8px: spacing dasar
 - 12px: spacing menengah
-- 16px: padding standar layar
-- 24px: jarak antar section
-- 32px: jarak besar antar blok UI
-- 48px: jarak pada layout utama yang lebih luas
+- 16px: padding standar
+- 20px–24px: jarak antar section
+- 28px–32px: spacing besar
+- 40px–48px: ruang layout utama
 
-### Layout Standards
-- Margin horizontal layar: 16px minimum, 24px pada layar lebih besar
-- Padding konten card: 16px sampai 20px
-- Padding form input: 14px–16px
-- Gap antar elemen vertical: 8px–16px
+### Layout Rules
+- Margin horizontal minimum 16px, ideal 20px
+- Padding konten card 16px–20px
+- Padding input field 14px–16px
+- Jarak antar elemen vertical 8px–16px
+
+---
+
+## 7. Shape & Elevation
 
 ### Border Radius
 - Small: 8px
 - Medium: 12px
 - Large: 16px
-- Full pill: 999px
+- Extra Large: 20px–24px
+- Pill: 999px
 
-### Elevation / Shadow
+### Shadow / Elevation
 - Level 0: no shadow
-- Level 1: subtle shadow, opacity rendah
-- Level 2: card / modal elevation
-- Level 3: floating action button / important surface
+- Level 1: shadow halus untuk card ringan
+- Level 2: shadow sedang untuk modal dan card penting
+- Level 3: shadow kuat untuk FAB dan elemen utama
+
+Gunakan rounded corners yang konsisten. Hindari sudut tajam yang membuat UI terasa kaku.
 
 ---
 
-## 5. Component Guidelines
+## 8. UI Component Rules
 
 ### App Bar
-- Gunakan app bar yang bersih dengan title singkat dan jelas.
-- Tambahkan action icon bila perlu, tetapi jangan terlalu padat.
-- Pastikan tinggi app bar nyaman untuk satu tangan.
-- Gunakan ikon minimalis dan konsisten.
+- Gunakan app bar ringan, bersih, dan modern
+- Judul singkat, jelas, dan tidak terlalu besar
+- Gunakan ikon aksi yang minimal dan konsisten
+- Background putih hangat atau beige muda, bukan warna gelap yang terlalu keras
 
 ### Bottom Navigation Bar
-- Gunakan 3–5 item maksimum.
-- Item utama: Home, Tasks, Profile.
-- Ikon harus jelas dan mudah dikenali.
-- Aktif state harus terlihat jelas dengan warna primary atau icon tint yang lebih kuat.
+- Gunakan 2–3 item utama saja
+- Home, Tasks, Profile jika perlu
+- Aktif state harus terlihat jelas dengan warna lebih tua dan ikon lebih tegas
+- Pastikan tinggi navbar nyaman dan tidak terlalu tebal
 
 ### Floating Action Button
-- Letakkan di pojok kanan bawah.
-- Gunakan warna kontras agar mudah terlihat.
-- Tombol tambah tugas harus selalu mudah dijangkau dengan satu tangan.
+- Letakkan di kanan bawah
+- Gunakan warna aksen yang kontras
+- Ukuran tombol cukup besar dan mudah dijangkau satu tangan
 
 ### Task Card
-- Gunakan card dengan rounded corners, padding yang konsisten, dan sedikit shadow.
-- Sediakan elemen: checkbox, title, due date, tag/category, dan action icon.
-- Prioritaskan informasi terpenting di bagian atas card.
-- Hindari card terlalu padat.
+- Card harus memiliki rounded corners, padding yang nyaman, dan shadow ringan
+- Susun elemen: checkbox, judul, lokasi, waktu, dan aksi
+- Pastikan informasi paling penting muncul di bagian atas
+- Hindari card yang terlalu padat atau terlalu tinggi
 
 ### Checkbox
-- Ukuran minimal 20px–24px.
-- Gunakan warna utama atau warna status selesai.
-- Berikan feedback visual saat ditekan.
+- Ukuran minimal 24px
+- Gunakan warna aksen atau hijau untuk status selesai
+- Berikan feedback visual saat ditekan
 
 ### Search Bar
-- Letakkan di bagian atas layar home.
-- Gunakan rounded container.
-- Tambahkan icon search dan clear action.
-- Pastikan field cukup lebar dan nyaman untuk input thumb.
+- Letakkan di bagian atas layar home
+- Gunakan container rounded dengan background lembut
+- Sertakan icon search dan clear action
 
 ### Text Field
-- Gunakan outline atau filled style yang lembut.
-- Label harus jelas dan tidak terlalu dekat dengan input.
-- Tambahkan hint text yang membantu pengguna.
-- Berikan state focus, error, dan disabled yang terlihat jelas.
+- Gunakan style rounded dan lembut
+- Label harus jelas dan tidak terlalu dekat dengan input
+- Gunakan hint text yang membantu
+- Berikan visual state fokus, error, dan disabled yang jelas
 
 ### Modal Bottom Sheet
-- Digunakan untuk tindakan cepat seperti filter, pilih prioritas, atau opsi task.
-- Gunakan tinggi moderat dan spacing yang konsisten.
-- Pastikan tombol aksi berada di bawah dengan jarak yang cukup.
+- Digunakan untuk form pembuatan tugas, filter, dan pilihan cepat
+- Muncul dari bawah dengan sudut atas membulat
+- Berikan header yang jelas dan tombol aksi di bawah
 
-### Dialog Konfirmasi
-- Gunakan untuk aksi berisiko seperti hapus task.
-- Tulisan singkat, jelas, dan langsung ke tujuan.
-- Sediakan dua tombol: utama dan sekunder.
+### Dialog Confirmation
+- Singkat, jelas, dan tidak terlalu formal
+- Gunakan dua tombol: primary dan secondary
 
 ### Empty State
-- Tampilkan ilustrasi sederhana, pesan singkat, dan tombol aksi jika relevan.
-- Fokus pada dukungan pengguna saat belum ada data.
+- Tampilkan pesan yang hangat dan jelas
+- Sertakan ilustrasi sederhana atau ikon besar
+- Tambahkan tombol aksi jika memungkinkan
 
 ### Loading State
-- Gunakan skeleton atau shimmer ringan.
-- Hindari layar kosong saat data sedang dimuat.
+- Gunakan shimmer atau skeleton ringan
+- Jangan tampilkan layar kosong saat data sedang diproses
 
 ### Error State
-- Tampilkan pesan yang jelas dan tindakan pemulihan.
-- Sertakan tombol retry jika memungkinkan.
+- Tampilkan pesan yang jelas dan solusi cepat
+- Sertakan tombol retry jika relevan
 
 ---
 
-## 6. Screen Layout Guidelines
+## 9. Screen Layout Guidelines
 
 ### Splash Screen
-- Tampilkan logo Pinote, nama aplikasi, dan loading indicator singkat.
-- Latar belakang menggunakan warna utama.
-- Pastikan tampilan bersih dan tidak terlalu ramai.
-- Fokus pada branding dan transisi yang halus.
-
-### Onboarding (jika diperlukan)
-- Maksimal 3 layar onboarding.
-- Gunakan bahasa sederhana dan visual yang jelas.
-- Tombol utama ditempatkan di bawah dengan skema yang konsisten.
-- Sediakan opsi skip untuk pengalaman yang lebih cepat.
+- Tampilkan logo Penote, nama aplikasi, dan loading indicator singkat
+- Background utama menggunakan warna primary #F7E9CF
+- Tampilan harus bersih, fokus, dan modern
+- Hindari elemen yang terlalu ramai
 
 ### Home Screen
-- Tata letak utama:
-  - Header dengan greeting dan search bar
-  - Ringkasan task / progress
-  - List task yang terorganisir
-  - Bottom navigation
-  - Floating action button di bawah kanan
-- Prioritas visual harus jelas: task penting dan yang mendekati deadline lebih menonjol.
-- Pastikan elemen mudah dijangkau dengan satu tangan.
+- Susun seperti layout modern berikut:
+  1. Header greeting
+  2. Ringkasan progress / statistik ringan
+  3. Search bar
+  4. Daftar tugas dalam card
+  5. FAB untuk tambah tugas
+- Prioritaskan tugas penting dan yang dekat deadline
+- Letakkan elemen penting dalam jangkauan satu tangan
 
 ### Create Task Screen
-- Gunakan form yang terstruktur dan mudah diisi.
-- Susun elemen secara vertikal: title, description, category, due date, priority, reminder.
-- Tombol simpan ditempatkan di area bawah yang mudah dijangkau.
-- Hindari form terlalu panjang; gunakan section yang ringkas.
+- Gunakan form yang bersih dan mudah dipahami
+- Susun elemen secara vertikal: judul, tanggal, jam, lokasi, tombol lanjut
+- Tombol utama ditempatkan di bagian bawah dengan spacing cukup
+- Hindari form yang terasa terlalu panjang
 
 ### Task Detail Screen
-- Tampilkan informasi utama di bagian atas.
-- Sertakan status, tanggal, prioritas, dan deskripsi.
-- Tombol edit dan delete ditempatkan dengan jelas.
-- Pastikan konten tidak terlalu padat dan mudah dibaca.
+- Tampilkan informasi utama di bagian atas
+- Sertakan status, tanggal, lokasi, dan ringkasan tugas
+- Tombol edit dan delete harus terlihat jelas
+- Layout harus terasa lega dan tidak sesak
 
 ### Profile / Settings Screen
-- Tempatkan avatar atau inisial pengguna di bagian atas.
-- Susun menu setting secara rapi dan mudah dipahami.
-- Gunakan icon yang konsisten dan teks yang singkat.
-- Sertakan opsi theme, notifications, about, dan support.
+- Gunakan header profil yang rapi
+- Tempatkan avatar atau inisial user di bagian atas
+- Susun menu setting secara vertikal dengan icon dan label yang konsisten
 
 ---
 
-## 7. Accessibility Guidelines
+## 10. Visual Style Direction for AI Generation
 
-Pinote harus mudah digunakan oleh berbagai jenis pengguna, termasuk pengguna dengan kebutuhan aksesibilitas.
+AI harus menghasilkan tampilan yang memiliki karakter berikut:
+- Premium soft aesthetic
+- Warm beige background
+- White or cream surfaces
+- Rounded corners everywhere
+- Gentle shadows
+- Strong but tasteful contrast
+- Spacious layout with breathing room
+- Smooth, polished interactions
 
-### Prinsip yang diterapkan
-- Gunakan ukuran teks yang cukup besar dan nyaman dibaca.
-- Pastikan target button minimal 44x44 dp.
-- Berikan label yang jelas untuk ikon dan form field.
-- Sertakan fokus visual yang terlihat saat navigasi keyboard atau screen reader.
-- Hindari elemen yang terlalu rapat atau terlalu kecil.
-- Pastikan semua interaksi dapat dipahami tanpa bergantung pada warna saja.
-
-### Rekomendasi WCAG
-- Text contrast minimum sesuai standar WCAG AA.
-- Button dan touch target cukup besar.
-- Gunakan semantics yang benar pada Flutter widgets.
-- Dukung screen reader dengan label yang deskriptif.
-
----
-
-## 8. Responsive Design Rules
-
-Desain harus adaptif untuk berbagai ukuran layar.
-
-### Aturan Utama
-- Gunakan layout yang fleksibel pada mobile, tablet, dan desktop.
-- Hindari overflow dengan memanfaatkan layout builder dan responsive widgets.
-- Jaga jarak antar elemen tetap konsisten.
-- Untuk layar sempit, prioritaskan konten utama dan kurangi elemen yang tidak penting.
-- Untuk layar lebih luas, gunakan ruang yang lebih lega dan tata letak yang lebih lapang.
-
-### Praktik yang disarankan
-- Gunakan `LayoutBuilder` atau media query untuk menyesuaikan ukuran.
-- Gunakan `SafeArea` dan `Expanded` secara tepat.
-- Pastikan scroll view bekerja dengan baik untuk form panjang.
-- Hindari fixed-size yang dapat memecah layout pada device berbeda.
+Jangan hasilkan tampilan:
+- terlalu tua
+- terlalu flat
+- terlalu ramai
+- terlalu gelap
+- terlalu minimalis sampai terasa kosong
+- terlalu rapat
+- terlalu kecil tombolnya
 
 ---
 
-## 9. Dark Mode Strategy
+## 11. Flutter Implementation Rules
 
-Pinote harus mendukung light dan dark mode secara konsisten.
+Gunakan Flutter modern dengan pendekatan berikut:
+- Material 3
+- ThemeData terpusat
+- ColorScheme terdefinisi dengan warna yang konsisten
+- Google Fonts Poppins
+- Responsive layout
+- Dark mode support
+- Accessibility support
+- Reusable widgets
+- Clean architecture ready
 
-### Light Mode
-- Latar utama warm beige.
-- Teks gelap agar mudah dibaca.
-- Card dan surface tetap terang namun tidak terlalu putih.
+### Implementation Requirements
+- Semua warna harus merujuk ke token design system, bukan nilai hardcoded yang acak
+- Semua spacing dan radius harus konsisten
+- Gunakan `Theme.of(context).colorScheme` untuk warna utama
+- Gunakan `GoogleFonts.poppinsTextTheme()` untuk typography
+- Gunakan `SafeArea`, `Expanded`, dan `LayoutBuilder` untuk responsivitas
+- Pastikan touch target minimal 44x44 dp
 
-### Dark Mode
-- Gunakan latar gelap dengan nuansa warm brown/charcoal.
-- Teks utama tetap terang dan kontras.
-- Elemen interaktif tetap terlihat jelas dan tidak kehilangan hierarki.
-
-### Prinsip Dark Mode
-- Jangan hanya membalik warna; sesuaikan kontras dan visibilitas.
-- Pastikan status warna tetap mudah dipahami.
-- Gunakan warna yang tetap nyaman untuk mata pada malam hari.
-
----
-
-## 10. Flutter Implementation Recommendations
-
-### Teknologi dan Arsitektur
-- Gunakan Flutter dengan Material 3.
-- Definisikan tema di file tema terpusat.
-- Gunakan `ThemeData` dan `ColorScheme` untuk menjaga konsistensi visual.
-- Gunakan Google Fonts untuk Poppins.
-- Bangun komponen UI reusable agar mudah dipelihara.
-- Siapkan struktur yang clean architecture ready untuk memisahkan UI, state, dan business logic.
-
-### Recommended Implementation Approach
-- Buat tema pusat di `app_theme.dart`.
-- Definisikan warna, typo, spacing, dan shadow di satu tempat.
-- Gunakan reusable widget seperti:
-  - `PinoteAppBar`
-  - `PinoteButton`
-  - `PinoteTaskCard`
-  - `PinoteTextField`
-  - `PinoteBottomNav`
-- Gunakan `Theme.of(context).colorScheme` untuk semua warna UI.
-- Gunakan `GoogleFonts.poppinsTextTheme()` untuk typography.
-- Pastikan semua layar mengikuti prinsip spacing dan accessibility yang sama.
-
-### Suggested Theme Direction
-- `useMaterial3: true`
-- `colorScheme` berbasis warna warm neutral dan brown accent
-- `textTheme` menggunakan Poppins
-- `scaffoldBackgroundColor` mengikuti warna utama atau secondary background tergantung mode
-- `elevation` dan `shape` konsisten di seluruh komponen
+### Recommended Reusable Widgets
+- `PenoteAppBar`
+- `PenotePrimaryButton`
+- `PenoteSecondaryButton`
+- `PenoteTaskCard`
+- `PenoteTextField`
+- `PenoteBottomNavBar`
+- `PenoteModalSheet`
 
 ---
 
-## Final Design Summary
+## 12. AI Prompt Instructions
 
-Pinote dirancang sebagai aplikasi to-do list yang terasa hangat, modern, dan mudah digunakan. Desain ini menyeimbangkan estetika visual, fungsionalitas, dan aksesibilitas agar memberikan pengalaman pengguna yang nyaman, produktif, dan konsisten di semua layar.
+Ketika AI diminta membuat UI Flutter untuk Penote, gunakan instruksi berikut:
+
+1. Bangun UI dengan nuansa warm beige, cream, dan brown soft.
+2. Gunakan Poppins sebagai font utama.
+3. Pastikan layout modern, bersih, dan tidak padat.
+4. Gunakan rounded corners yang konsisten.
+5. Beri spacing yang lega dan proporsional.
+6. Gunakan card, shadow halus, dan elemen interaktif yang terasa premium.
+7. Pastikan tombol besar, jelas, dan mudah diklik.
+8. Prioritaskan pengalaman mobile-first.
+9. Jaga keterbacaan teks dan kontras warna.
+10. Gunakan Material 3 dan widget Flutter modern.
+
+---
+
+## 13. Final Design Standard
+
+Hasil kode UI harus terasa:
+- modern
+- nyaman dipakai
+- premium namun tidak berlebihan
+- konsisten di semua layar
+- siap digunakan sebagai aplikasi to-do list yang serius dan menyenangkan
