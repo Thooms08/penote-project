@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'main.dart';
 
+/// Layar pembuka (splash screen) yang tampil saat aplikasi pertama kali dibuka.
+///
+/// Menampilkan logo, nama aplikasi, dan indikator loading selama 2 detik,
+/// kemudian otomatis berpindah ke [MainScreen].
 class OpeningScreen extends StatefulWidget {
   const OpeningScreen({super.key});
 
@@ -9,12 +13,20 @@ class OpeningScreen extends StatefulWidget {
 }
 
 class _OpeningScreenState extends State<OpeningScreen> {
+  /// Dipanggil saat widget pertama kali dimasukkan ke dalam tree.
+  ///
+  /// Langsung memanggil [_navigateToHome] untuk memulai hitungan mundur
+  /// sebelum berpindah ke halaman utama.
   @override
   void initState() {
     super.initState();
     _navigateToHome();
   }
 
+  /// Menunggu 2 detik kemudian mengganti rute ke [MainScreen].
+  ///
+  /// Menggunakan [Navigator.pushReplacement] agar user tidak bisa kembali
+  /// ke splash screen setelah navigasi.
   Future<void> _navigateToHome() async {
     await Future.delayed(const Duration(seconds: 2));
 
@@ -26,6 +38,7 @@ class _OpeningScreenState extends State<OpeningScreen> {
     }
   }
 
+  /// Membangun tampilan splash screen dengan logo, nama app, dan loading indicator.
   @override
   Widget build(BuildContext context) {
     return Scaffold(

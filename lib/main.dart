@@ -4,14 +4,25 @@ import 'opening.dart';
 import 'btmnavbar.dart';
 import 'list.dart';
 import 'modal.dart';
+import 'canvas/main.dart' show NotesPreviewCard;
+import 'profile/main.dart' show ProfileView;
 
+/// Titik masuk (entry point) aplikasi Penote.
+///
+/// Menjalankan [PenoteApp] sebagai root widget.
 void main() {
   runApp(const PenoteApp());
 }
 
+/// Widget root aplikasi Penote yang mengatur tema dan rute awal.
+///
+/// Mendukung tema terang dan gelap yang otomatis mengikuti
+/// pengaturan sistem perangkat.
 class PenoteApp extends StatelessWidget {
   const PenoteApp({super.key});
 
+  /// Membangun [MaterialApp] dengan tema Penote (Poppins, warna coklat hangat)
+  /// dan mengatur halaman awal ke [OpeningScreen].
   @override
   Widget build(BuildContext context) {
     final baseTheme = ThemeData(
@@ -58,6 +69,8 @@ class PenoteApp extends StatelessWidget {
 // MainScreen — shell dengan bottom nav
 // ══════════════════════════════════════════════════════════════════════════════
 
+/// Shell utama aplikasi yang mengandung bottom navigation bar
+/// dan mengelola perpindahan antara tab Home dan Profile.
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -65,13 +78,20 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
+/// State dari [MainScreen] yang melacak tab aktif dan referensi ke HomeView.
 class _MainScreenState extends State<MainScreen> {
+  /// Indeks tab yang sedang aktif (0 = Home, 1 = Profile).
   int _currentIndex = 0;
 
+  /// GlobalKey untuk mengakses state [HomeView] dari luar,
+  /// khususnya untuk membuka modal tambah aktifitas via FAB.
   // HomeView adalah StatefulWidget — tidak bisa const di sini
   // karena pakai DateTime.now() di initState
   final _homeKey = GlobalKey<_HomeViewState>();
 
+  /// Membangun layout utama dengan [IndexedStack], FAB, dan [PinoteBottomNavBar].
+  ///
+  /// FAB hanya ditampilkan di tab Home (index 0).
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,6 +128,8 @@ class _MainScreenState extends State<MainScreen> {
 // HomeView — tampilan utama
 // ══════════════════════════════════════════════════════════════════════════════
 
+/// Tampilan halaman utama yang menampilkan daftar aktifitas,
+/// progress card, dan grafik bar.
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
 
@@ -115,7 +137,9 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
+/// State dari [HomeView] yang mengelola daftar aktifitas dan semua aksi user.
 class _HomeViewState extends State<HomeView> {
+  /// Daftar aktifitas user. Diinisialisasi dengan dua data sample.
   late final List<PenoteTask> _tasks = [
     PenoteTask(
       id: 'sample-1',
@@ -135,22 +159,29 @@ class _HomeViewState extends State<HomeView> {
     ),
   ];
 
-  // ── Buka modal tambah / edit aktifitas ──────────────────────────────────────
+  /// Membuka modal sheet untuk menambah aktifitas baru atau mengedit yang ada.
+  ///
+  /// Jika [task] diberikan, modal terbuka dalam mode edit.
+  /// Hasilnya ditambahkan ke atau diperbarui dalam [_tasks].
   Future<void> _openTaskCreator({PenoteTask? task}) async {
     final result = await showTaskCreationSheet(context, task: task);
     if (!mounted || result == null) return;
 
     setState(() {
       if (task != null) {
+        // Perbarui aktifitas yang sudah ada berdasarkan id
         final idx = _tasks.indexWhere((t) => t.id == task.id);
         if (idx >= 0) _tasks[idx] = result;
       } else {
+        // Tambah aktifitas baru di paling atas daftar
         _tasks.insert(0, result);
       }
     });
   }
 
-  // ── Centang selesai — simpan datetime konfirmasi ────────────────────────────
+  /// Mengubah status selesai aktifitas dan mencatat waktu penyelesaian.
+  ///
+  /// Menampilkan snackbar konfirmasi dengan waktu selesai atau pesan pembatalan.
   void _toggleTask(PenoteTask task) {
     setState(() {
       task.isCompleted = !task.isCompleted;
@@ -174,7 +205,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  // ── Hapus ───────────────────────────────────────────────────────────────────
+  /// Menghapus aktifitas dari daftar dan menampilkan snackbar konfirmasi.
   void _deleteTask(PenoteTask task) {
     setState(() => _tasks.removeWhere((t) => t.id == task.id));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -186,19 +217,27 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  // ── Persentase aktifitas ────────────────────────────────────────────────────
+  /// Persentase aktifitas yang sudah selesai (0.0 – 1.0).
+  /// Mengembalikan 0 jika tidak ada aktifitas.
   double get _completionRate => _tasks.isEmpty
       ? 0
       : _tasks.where((t) => t.isCompleted).length / _tasks.length;
 
+  /// Jumlah aktifitas yang sudah diselesaikan.
   int get _completedCount => _tasks.where((t) => t.isCompleted).length;
+
+  /// Jumlah aktifitas yang belum selesai dan belum melewati jadwal.
   int get _pendingCount => _tasks
       .where((t) => !t.isCompleted && !t.scheduledAt.isBefore(DateTime.now()))
       .length;
+
+  /// Jumlah aktifitas yang belum selesai namun sudah melewati jadwal.
   int get _lateCount => _tasks
       .where((t) => !t.isCompleted && t.scheduledAt.isBefore(DateTime.now()))
       .length;
 
+  /// Membangun tampilan utama yang berisi header, progress card,
+  /// grafik bar, dan daftar aktifitas.
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -292,6 +331,10 @@ class _HomeViewState extends State<HomeView> {
 // _TaskCardItem — card aktifitas inline (tanpa nested ListView)
 // ══════════════════════════════════════════════════════════════════════════════
 
+/// Kartu aktifitas yang digunakan langsung dalam [ListView] di HomeView.
+///
+/// Menampilkan informasi lengkap aktifitas termasuk judul, lokasi, waktu,
+/// status, dan pratinjau catatan jika ada.
 class _TaskCardItem extends StatelessWidget {
   const _TaskCardItem({
     required this.task,
@@ -300,14 +343,24 @@ class _TaskCardItem extends StatelessWidget {
     required this.onDelete,
   });
 
+  /// Data aktifitas yang akan ditampilkan pada kartu ini.
   final PenoteTask task;
+
+  /// Callback ketika tombol centang ditekan.
   final VoidCallback onToggle;
+
+  /// Callback ketika menu "Edit Aktifitas" dipilih.
   final VoidCallback onEdit;
+
+  /// Callback ketika menu "Hapus" dipilih.
   final VoidCallback onDelete;
 
+  /// Mengembalikan `true` jika waktu aktifitas sudah lewat dan belum selesai.
   bool get _isLate =>
       task.scheduledAt.isBefore(DateTime.now()) && !task.isCompleted;
 
+  /// Membangun kartu aktifitas dengan animasi warna, tombol centang,
+  /// konten informasi, dan menu popup aksi.
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -316,6 +369,7 @@ class _TaskCardItem extends StatelessWidget {
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.fromLTRB(14, 14, 8, 14),
       decoration: BoxDecoration(
+        // Warna kartu berubah ke hijau muda saat aktifitas selesai
         color: task.isCompleted
             ? const Color(0xFFF0FAF4)
             : const Color(0xFFFFFDF8),
@@ -390,6 +444,7 @@ class _TaskCardItem extends StatelessWidget {
                         style: textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
+                          // Strikethrough saat aktifitas selesai
                           color: task.isCompleted
                               ? const Color(0xFF6E6258)
                               : const Color(0xFF2F241D),
@@ -400,6 +455,7 @@ class _TaskCardItem extends StatelessWidget {
                         ),
                       ),
                     ),
+                    // Badge terlambat jika aktifitas melewati jadwal
                     if (_isLate)
                       Container(
                         margin: const EdgeInsets.only(left: 6),
@@ -463,6 +519,7 @@ class _TaskCardItem extends StatelessWidget {
                     ),
                   ],
                 ),
+                // Tampilkan waktu penyelesaian jika aktifitas sudah selesai
                 if (task.isCompleted && task.completedAt != null) ...[
                   const SizedBox(height: 4),
                   Row(
@@ -485,6 +542,11 @@ class _TaskCardItem extends StatelessWidget {
                       ),
                     ],
                   ),
+                ],
+                // Preview catatan jika ada
+                if (task.notes != null && task.notes!.trim().isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  NotesPreviewCard(notes: task.notes!),
                 ],
               ],
             ),
@@ -553,6 +615,8 @@ class _TaskCardItem extends StatelessWidget {
 // Widget: Header dengan logo Penote
 // ══════════════════════════════════════════════════════════════════════════════
 
+/// Header halaman utama yang menampilkan logo, sapaan berdasarkan waktu,
+/// dan badge tanggal hari ini.
 class _HomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -560,6 +624,7 @@ class _HomeHeader extends StatelessWidget {
     final hour = now.hour;
     String greeting;
     IconData greetIcon;
+    // Tentukan sapaan berdasarkan jam saat ini
     if (hour < 11) {
       greeting = 'Selamat pagi';
       greetIcon = Icons.wb_sunny_rounded;
@@ -672,6 +737,9 @@ class _HomeHeader extends StatelessWidget {
     );
   }
 
+  /// Mengubah nomor hari dalam seminggu (1-7) menjadi singkatan bahasa Indonesia.
+  ///
+  /// Contoh: 1 → "Sen", 7 → "Min"
   String _weekdayShort(int wd) {
     const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
     return days[wd - 1];
@@ -682,6 +750,8 @@ class _HomeHeader extends StatelessWidget {
 // Widget: Progress Card dengan circular indicator + persentase
 // ══════════════════════════════════════════════════════════════════════════════
 
+/// Kartu ringkasan pencapaian yang menampilkan persentase penyelesaian
+/// dalam bentuk circular progress indicator beserta statistik mini.
 class _ProgressCard extends StatelessWidget {
   const _ProgressCard({
     required this.completionRate,
@@ -691,17 +761,30 @@ class _ProgressCard extends StatelessWidget {
     required this.total,
   });
 
+  /// Tingkat penyelesaian dalam rentang 0.0 – 1.0.
   final double completionRate;
+
+  /// Jumlah aktifitas yang sudah diselesaikan.
   final int completedCount;
+
+  /// Jumlah aktifitas yang masih pending (belum selesai, belum terlambat).
   final int pendingCount;
+
+  /// Jumlah aktifitas yang terlambat (belum selesai, sudah lewat jadwal).
   final int lateCount;
+
+  /// Total seluruh aktifitas.
   final int total;
 
+  /// Membangun kartu progress dengan circular indicator di kiri
+  /// dan teks motivasi serta statistik mini di kanan.
   @override
   Widget build(BuildContext context) {
+    // Konversi ke persentase bulat untuk ditampilkan
     final pct = (completionRate * 100).round();
     final textTheme = Theme.of(context).textTheme;
 
+    // Pilih pesan motivasi berdasarkan persentase penyelesaian
     String motivasi;
     if (pct == 100) {
       motivasi = 'Sempurna! Semua selesai 🎉';
@@ -814,14 +897,24 @@ class _ProgressCard extends StatelessWidget {
   }
 }
 
+/// Widget statistik mini yang menampilkan angka dan label dalam satu kolom.
+///
+/// Digunakan di dalam [_ProgressCard] untuk menampilkan ringkasan
+/// jumlah selesai, pending, dan terlambat.
 class _MiniStat extends StatelessWidget {
   const _MiniStat({
     required this.label,
     required this.count,
     required this.color,
   });
+
+  /// Label teks di bawah angka (misalnya "Selesai", "Pending").
   final String label;
+
+  /// Angka yang ditampilkan secara besar di atas label.
   final int count;
+
+  /// Warna teks angka yang mencerminkan kategori statistik.
   final Color color;
 
   @override
@@ -853,6 +946,10 @@ class _MiniStat extends StatelessWidget {
 // Widget: Grafik Bar Perbandingan Aktifitas
 // ══════════════════════════════════════════════════════════════════════════════
 
+/// Grafik bar horizontal yang memvisualisasikan perbandingan
+/// aktifitas selesai, pending, dan terlambat.
+///
+/// Widget ini tidak ditampilkan jika tidak ada aktifitas sama sekali.
 class _ActivityBarChart extends StatelessWidget {
   const _ActivityBarChart({
     required this.completedCount,
@@ -860,13 +957,19 @@ class _ActivityBarChart extends StatelessWidget {
     required this.lateCount,
   });
 
+  /// Jumlah aktifitas yang sudah diselesaikan.
   final int completedCount;
+
+  /// Jumlah aktifitas yang masih pending.
   final int pendingCount;
+
+  /// Jumlah aktifitas yang terlambat.
   final int lateCount;
 
   @override
   Widget build(BuildContext context) {
     final total = completedCount + pendingCount + lateCount;
+    // Sembunyikan grafik jika tidak ada data
     if (total == 0) return const SizedBox.shrink();
 
     return Container(
@@ -887,11 +990,7 @@ class _ActivityBarChart extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.bar_chart_rounded,
-                size: 18,
-                color: Color(0xFF8A5A44),
-              ),
+              const Icon(Icons.bar_chart_rounded, color: Color(0xFF8A5A44)),
               const SizedBox(width: 8),
               Text(
                 'Grafik Aktifitas',
@@ -932,6 +1031,7 @@ class _ActivityBarChart extends StatelessWidget {
   }
 }
 
+/// Satu baris dalam grafik bar yang menampilkan ikon, label, bar, dan persentase.
 class _BarRow extends StatelessWidget {
   const _BarRow({
     required this.label,
@@ -973,7 +1073,9 @@ class _BarRow extends StatelessWidget {
             borderRadius: BorderRadius.circular(999),
             child: Stack(
               children: [
+                // Track bar (background)
                 Container(height: 10, color: const Color(0xFFF5EFE6)),
+                // Fill bar dengan animasi
                 FractionallySizedBox(
                   widthFactor: ratio,
                   child: AnimatedContainer(
@@ -1012,6 +1114,10 @@ class _BarRow extends StatelessWidget {
 // Widget: Empty state aktifitas
 // ══════════════════════════════════════════════════════════════════════════════
 
+/// Widget empty state yang ditampilkan saat daftar aktifitas masih kosong.
+///
+/// Menampilkan ikon, judul, dan teks panduan untuk mendorong user
+/// menambahkan aktifitas pertama mereka.
 class _EmptyAktifitas extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -1060,158 +1166,4 @@ class _EmptyAktifitas extends StatelessWidget {
 // ProfileView
 // ══════════════════════════════════════════════════════════════════════════════
 
-class ProfileView extends StatelessWidget {
-  const ProfileView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-                Image.asset(
-                  'assets/logo.png',
-                  width: 36,
-                  height: 36,
-                  errorBuilder: (_, __, ___) => const Icon(
-                    Icons.check_circle_outline_rounded,
-                    color: Color(0xFF8A5A44),
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Profil',
-                  style: textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Profile card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFFFF6E5), Color(0xFFF7E9CF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 12,
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor: colorScheme.primary.withOpacity(0.16),
-                    child: const Icon(
-                      Icons.person_rounded,
-                      color: Color(0xFF8A5A44),
-                      size: 32,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Penote User',
-                          style: textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          'Semua aktifitas jadi lebih rapi',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF6E6258),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Settings list
-            _SettingsCard(
-              children: [
-                ListTile(
-                  leading: const Icon(
-                    Icons.nightlight_round_rounded,
-                    color: Color(0xFF8A5A44),
-                  ),
-                  title: const Text('Mode gelap'),
-                  trailing: Switch(value: false, onChanged: (_) {}),
-                ),
-                const Divider(height: 1, indent: 16, endIndent: 16),
-                ListTile(
-                  leading: const Icon(
-                    Icons.notifications_none_rounded,
-                    color: Color(0xFF8A5A44),
-                  ),
-                  title: const Text('Notifikasi'),
-                  trailing: const Icon(
-                    Icons.chevron_right_rounded,
-                    color: Color(0xFF6E6258),
-                  ),
-                  onTap: () {},
-                ),
-                const Divider(height: 1, indent: 16, endIndent: 16),
-                ListTile(
-                  leading: const Icon(
-                    Icons.info_outline_rounded,
-                    color: Color(0xFF8A5A44),
-                  ),
-                  title: const Text('Tentang Penote'),
-                  trailing: const Icon(
-                    Icons.chevron_right_rounded,
-                    color: Color(0xFF6E6258),
-                  ),
-                  onTap: () {},
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SettingsCard extends StatelessWidget {
-  const _SettingsCard({required this.children});
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFDF8),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
-        ],
-      ),
-      child: Column(children: children),
-    );
-  }
-}
+// ProfileView dan _SettingsCard dipindah ke lib/profile/main.dart

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Model data untuk satu Aktifitas
+/// Menyimpan data satu Aktifitas yang dibuat oleh user.
+///
+/// Setiap aktifitas memiliki judul, lokasi, waktu jadwal,
+/// dan status penyelesaian.
 class PenoteTask {
   PenoteTask({
     required this.id,
@@ -11,17 +14,40 @@ class PenoteTask {
     required this.updatedAt,
     this.isCompleted = false,
     this.completedAt,
+    this.notes,
   });
 
+  /// Identifikasi unik aktifitas, dibuat dari timestamp.
   final String id;
-  String title;
-  String location;
-  final DateTime scheduledAt;
-  final DateTime createdAt;
-  DateTime updatedAt;
-  bool isCompleted;
-  DateTime? completedAt; // datetime saat user centang
 
+  /// Judul aktifitas yang ditampilkan di daftar.
+  String title;
+
+  /// Lokasi / tempat aktifitas berlangsung.
+  String location;
+
+  /// Waktu yang dijadwalkan untuk aktifitas ini.
+  final DateTime scheduledAt;
+
+  /// Waktu ketika aktifitas ini pertama kali dibuat.
+  final DateTime createdAt;
+
+  /// Waktu terakhir aktifitas ini diperbarui.
+  DateTime updatedAt;
+
+  /// Status apakah aktifitas sudah diselesaikan atau belum.
+  bool isCompleted;
+
+  /// Waktu ketika user menandai aktifitas ini sebagai selesai.
+  /// Bernilai null jika belum diselesaikan.
+  DateTime? completedAt;
+
+  /// Catatan tambahan dengan dukungan markdown sederhana (**bold**, _italic_, bullet).
+  String? notes;
+
+  /// Memformat [value] menjadi string tanggal dan waktu yang mudah dibaca.
+  ///
+  /// Contoh output: "Sen, 5 Jan 2025 • 09:30"
   String formatDateTime(DateTime value) {
     final weekdays = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
     final months = [
@@ -46,6 +72,9 @@ class PenoteTask {
 
 // ── Widget daftar aktifitas ──────────────────────────────────────────────────
 
+/// Widget yang menampilkan daftar aktifitas dalam bentuk scrollable list.
+///
+/// Menerima callback untuk setiap aksi: centang selesai, edit, dan hapus.
 class TaskListView extends StatelessWidget {
   const TaskListView({
     super.key,
@@ -55,11 +84,19 @@ class TaskListView extends StatelessWidget {
     required this.onDelete,
   });
 
+  /// Daftar aktifitas yang akan ditampilkan.
   final List<PenoteTask> tasks;
+
+  /// Callback yang dipanggil ketika user mencentang/membuka status selesai.
   final ValueChanged<PenoteTask> onToggleComplete;
+
+  /// Callback yang dipanggil ketika user memilih menu "Edit Aktifitas".
   final ValueChanged<PenoteTask> onEdit;
+
+  /// Callback yang dipanggil ketika user memilih menu "Hapus".
   final ValueChanged<PenoteTask> onDelete;
 
+  /// Membangun daftar aktifitas dengan separator antar item.
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
@@ -81,6 +118,10 @@ class TaskListView extends StatelessWidget {
 
 // ── Kartu satu aktifitas ─────────────────────────────────────────────────────
 
+/// Kartu yang menampilkan informasi satu aktifitas beserta tombol aksi.
+///
+/// Menampilkan judul, lokasi, waktu aktifitas, dan — jika sudah selesai —
+/// waktu penyelesaian. Kartu berubah warna secara animasi sesuai status.
 class _TaskCard extends StatelessWidget {
   const _TaskCard({
     required this.task,
@@ -89,11 +130,19 @@ class _TaskCard extends StatelessWidget {
     required this.onDelete,
   });
 
+  /// Data aktifitas yang ditampilkan pada kartu ini.
   final PenoteTask task;
+
+  /// Callback ketika tombol centang ditekan.
   final VoidCallback onToggle;
+
+  /// Callback ketika menu "Edit" dipilih.
   final VoidCallback onEdit;
+
+  /// Callback ketika menu "Hapus" dipilih.
   final VoidCallback onDelete;
 
+  /// Mengembalikan `true` jika waktu aktifitas sudah lewat dan belum selesai.
   bool get _isLate =>
       task.scheduledAt.isBefore(DateTime.now()) && !task.isCompleted;
 
@@ -104,6 +153,7 @@ class _TaskCard extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       decoration: BoxDecoration(
+        // Warna kartu berubah ke hijau muda saat aktifitas selesai
         color: task.isCompleted
             ? const Color(0xFFF0FAF4)
             : const Color(0xFFFFFDF8),
@@ -148,6 +198,7 @@ class _TaskCard extends StatelessWidget {
                             style: textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w700,
                               fontSize: 15,
+                              // Judul di-strikethrough saat aktifitas selesai
                               color: task.isCompleted
                                   ? const Color(0xFF6E6258)
                                   : const Color(0xFF2F241D),
@@ -158,6 +209,7 @@ class _TaskCard extends StatelessWidget {
                             ),
                           ),
                         ),
+                        // Tampilkan badge terlambat jika melewati jadwal
                         if (_isLate) _LateChip(),
                       ],
                     ),
@@ -219,9 +271,16 @@ class _TaskCard extends StatelessWidget {
 
 // ── Tombol centang animasi ───────────────────────────────────────────────────
 
+/// Tombol kotak dengan animasi yang menampilkan status selesai aktifitas.
+///
+/// Berubah warna dari transparan ke hijau dengan efek shadow saat dicentang.
 class _CheckButton extends StatelessWidget {
   const _CheckButton({required this.isCompleted, required this.onTap});
+
+  /// Status apakah aktifitas sudah selesai.
   final bool isCompleted;
+
+  /// Callback ketika tombol ini ditekan.
   final VoidCallback onTap;
 
   @override
@@ -261,6 +320,7 @@ class _CheckButton extends StatelessWidget {
 
 // ── Badge "Terlambat" ────────────────────────────────────────────────────────
 
+/// Chip / badge kecil berwarna merah yang muncul saat aktifitas melewati jadwal.
 class _LateChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -285,6 +345,10 @@ class _LateChip extends StatelessWidget {
 
 // ── Baris info kecil ─────────────────────────────────────────────────────────
 
+/// Baris informasi kecil dengan ikon, label, dan nilai teks.
+///
+/// Digunakan untuk menampilkan waktu aktifitas dan waktu penyelesaian
+/// dalam satu baris yang ringkas.
 class _InfoRow extends StatelessWidget {
   const _InfoRow({
     required this.icon,
@@ -292,9 +356,17 @@ class _InfoRow extends StatelessWidget {
     required this.value,
     required this.color,
   });
+
+  /// Ikon yang ditampilkan di sebelah kiri.
   final IconData icon;
+
+  /// Label teks pendek, misalnya "Aktifitas" atau "Selesai".
   final String label;
+
+  /// Nilai yang ditampilkan setelah label.
   final String value;
+
+  /// Warna ikon dan label.
   final Color color;
 
   @override
@@ -326,9 +398,16 @@ class _InfoRow extends StatelessWidget {
 
 // ── Menu popup edit / hapus ──────────────────────────────────────────────────
 
+/// Menu popup yang muncul saat user menekan ikon tiga titik pada kartu aktifitas.
+///
+/// Menyediakan dua pilihan aksi: Edit Aktifitas dan Hapus.
 class _ActionMenu extends StatelessWidget {
   const _ActionMenu({required this.onEdit, required this.onDelete});
+
+  /// Callback yang dipanggil ketika user memilih "Edit Aktifitas".
   final VoidCallback onEdit;
+
+  /// Callback yang dipanggil ketika user memilih "Hapus".
   final VoidCallback onDelete;
 
   @override
