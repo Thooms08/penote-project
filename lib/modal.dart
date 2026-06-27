@@ -295,31 +295,6 @@ class _TaskCreationSheetState extends State<TaskCreationSheet> {
 
   /// Memvalidasi form, lalu membuka halaman Canvas untuk edit detail lebih lanjut.
   ///
-  /// Setelah kembali dari Canvas, field form diperbarui dengan data terbaru
-  /// dari [CanvasScreen].
-  Future<void> _openEditDetail() async {
-    final task = _buildTask();
-    if (task == null) return;
-
-    // Sync notes dari controller ke task sebelum ke canvas
-    task.notes = _notesController.text.trim().isEmpty
-        ? null
-        : _notesController.text;
-
-    final updatedTask = await Navigator.of(context).push<PenoteTask>(
-      MaterialPageRoute(builder: (_) => CanvasScreen(task: task)),
-    );
-
-    if (updatedTask != null && mounted) {
-      setState(() {
-        _currentNotes = updatedTask.notes;
-        _notesController.text = updatedTask.notes ?? '';
-        _titleController.text = updatedTask.title;
-        _locationController.text = updatedTask.location;
-      });
-    }
-  }
-
   // ── UI ────────────────────────────────────────────────────────────────────
 
   /// Membangun tampilan form lengkap di dalam bottom sheet.
@@ -473,30 +448,8 @@ class _TaskCreationSheetState extends State<TaskCreationSheet> {
 
         // ── Tombol aksi ──
         if (_isEdit) ...[
-          // Tombol EDIT DETAIL → Canvas
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _openEditDetail,
-              icon: const Icon(Icons.open_in_new_rounded, size: 18),
-              label: const Text('EDIT DETAIL'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                foregroundColor: const Color(0xFF8A5A44),
-                side: const BorderSide(color: Color(0xFF8A5A44), width: 1.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Tombol SIMPAN
+
+          
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(

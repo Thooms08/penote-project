@@ -540,29 +540,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             color: const Color(0xFF2F241D),
           ),
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            child: TextButton(
-              onPressed: _save,
-              style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFF8A5A44),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-              ),
-              child: const Text(
-                'Simpan',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-              ),
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
