@@ -4,7 +4,7 @@ import 'opening.dart';
 import 'btmnavbar.dart';
 import 'list.dart';
 import 'modal.dart';
-import 'canvas/main.dart' show NotesPreviewCard;
+import 'notes_helper.dart' show NotesPreviewCard;
 import 'profile/main.dart' show ProfileView;
 
 /// Titik masuk (entry point) aplikasi Penote.

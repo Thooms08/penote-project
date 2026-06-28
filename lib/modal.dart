@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'list.dart';
-import 'canvas/main.dart';
+import 'notes_helper.dart';
 
 // ── Entry point: buka modal buat / edit aktifitas ───────────────────────────
 
@@ -188,7 +188,7 @@ class _TaskCreationSheetState extends State<TaskCreationSheet> {
         );
       } else {
         // Tambah bullet di awal baris
-        final newBefore = before.substring(0, lineStart) + '• ' + linePrefix;
+        final newBefore = '${before.substring(0, lineStart)}• $linePrefix';
         ctrl.value = ctrl.value.copyWith(
           text: '$newBefore$after',
           selection: TextSelection.collapsed(offset: newBefore.length),
@@ -293,8 +293,27 @@ class _TaskCreationSheetState extends State<TaskCreationSheet> {
     Navigator.of(context).pop(task);
   }
 
-  /// Memvalidasi form, lalu membuka halaman Canvas untuk edit detail lebih lanjut.
+  /// Memvalidasi form, lalu membuka halaman [CanvasScreen] untuk edit detail lebih lanjut.
   ///
+  /// Menyimpan dulu data form ke objek task sementara sebelum diteruskan ke Canvas.
+  Future<void> _openEditDetail() async {
+    final task = _buildTask();
+    if (task == null) return;
+    final result = await Navigator.of(context).push<PenoteTask>(
+      MaterialPageRoute(builder: (_) => CanvasScreen(task: task)),
+    );
+    if (!mounted || result == null) return;
+    // Sync kembali hasil edit dari Canvas ke form
+    setState(() {
+      _titleController.text = result.title;
+      _locationController.text = result.location;
+      _notesController.text = result.notes ?? '';
+      _currentNotes = result.notes;
+      _selectedDate = result.scheduledAt;
+      _selectedTime = TimeOfDay.fromDateTime(result.scheduledAt);
+    });
+  }
+
   // ── UI ────────────────────────────────────────────────────────────────────
 
   /// Membangun tampilan form lengkap di dalam bottom sheet.
@@ -427,15 +446,15 @@ class _TaskCreationSheetState extends State<TaskCreationSheet> {
         // ── Catatan ──
         _SectionLabel(label: 'Catatan'),
         const SizedBox(height: 10),
-        // Toolbar formatting
-        _NotesToolbar(
+        // Toolbar formatting dari notes_helper.dart
+        NotesFormattingToolbar(
           onBold: () => _wrapSelection('**', '**'),
           onItalic: () => _wrapSelection('_', '_'),
           onBullet: _insertBullet,
         ),
         const SizedBox(height: 8),
-        // Editor
-        _NotesField(controller: _notesController, focusNode: _notesFocus),
+        // Editor catatan dari notes_helper.dart
+        RichNotesEditor(controller: _notesController, focusNode: _notesFocus),
         const SizedBox(height: 28),
 
         // ── Preview catatan (hanya saat ada notes) ──
@@ -448,8 +467,6 @@ class _TaskCreationSheetState extends State<TaskCreationSheet> {
 
         // ── Tombol aksi ──
         if (_isEdit) ...[
-
-          
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
@@ -461,6 +478,29 @@ class _TaskCreationSheetState extends State<TaskCreationSheet> {
                 backgroundColor: const Color(0xFF8A5A44),
                 foregroundColor: Colors.white,
                 elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Tombol EDIT DETAIL — membuka CanvasScreen
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _openEditDetail,
+              icon: const Icon(Icons.open_in_full_rounded, size: 18),
+              label: const Text('EDIT DETAIL'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                foregroundColor: const Color(0xFF8A5A44),
+                side: const BorderSide(color: Color(0xFF8A5A44), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -599,211 +639,6 @@ class _DateTimePickerTile extends StatelessWidget {
   }
 }
 
-// ── Notes toolbar & field ────────────────────────────────────────────────────
-
-/// Toolbar pemformatan untuk field catatan.
-///
-/// Menyediakan tombol Bold, Italic, dan Bullet Point yang bekerja
-/// pada teks yang dipilih dalam editor catatan.
-class _NotesToolbar extends StatelessWidget {
-  const _NotesToolbar({
-    required this.onBold,
-    required this.onItalic,
-    required this.onBullet,
-  });
-
-  /// Callback untuk menerapkan format tebal (**bold**).
-  final VoidCallback onBold;
-
-  /// Callback untuk menerapkan format miring (_italic_).
-  final VoidCallback onItalic;
-
-  /// Callback untuk menambahkan bullet point (• ).
-  final VoidCallback onBullet;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7E9CF),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD8CDBE)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _ToolBtn(
-            tooltip: 'Tebal',
-            onTap: onBold,
-            child: const Text(
-              'B',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFF2F241D),
-              ),
-            ),
-          ),
-          const SizedBox(width: 2),
-          _ToolBtn(
-            tooltip: 'Miring',
-            onTap: onItalic,
-            child: const Text(
-              'I',
-              style: TextStyle(
-                fontSize: 14,
-                fontStyle: FontStyle.italic,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2F241D),
-              ),
-            ),
-          ),
-          const SizedBox(width: 2),
-          _ToolBtn(
-            tooltip: 'Bullet',
-            onTap: onBullet,
-            child: const Icon(
-              Icons.format_list_bulleted_rounded,
-              size: 18,
-              color: Color(0xFF2F241D),
-            ),
-          ),
-          const SizedBox(width: 8),
-          const Text(
-            '**tebal**  _miring_',
-            style: TextStyle(
-              fontSize: 10,
-              color: Color(0xFF9E8E7E),
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Tombol kecil dalam toolbar dengan tooltip dan efek ripple.
-class _ToolBtn extends StatelessWidget {
-  const _ToolBtn({
-    required this.tooltip,
-    required this.onTap,
-    required this.child,
-  });
-
-  /// Teks tooltip yang muncul saat tombol ditekan lama.
-  final String tooltip;
-
-  /// Callback ketika tombol ini diketuk.
-  final VoidCallback onTap;
-
-  /// Widget konten di dalam tombol (teks atau ikon).
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: child,
-        ),
-      ),
-    );
-  }
-}
-
-/// Widget field input untuk catatan aktifitas.
-///
-/// Menggunakan [StatefulWidget] agar bisa merespons perubahan teks
-/// dan memicu rebuild ketika konten berubah.
-class _NotesField extends StatefulWidget {
-  const _NotesField({required this.controller, required this.focusNode});
-
-  /// Controller teks yang terhubung dengan field ini.
-  final TextEditingController controller;
-
-  /// FocusNode untuk mengontrol fokus keyboard.
-  final FocusNode focusNode;
-
-  @override
-  State<_NotesField> createState() => _NotesFieldState();
-}
-
-/// State dari [_NotesField] yang mendengarkan perubahan teks.
-class _NotesFieldState extends State<_NotesField> {
-  @override
-  void initState() {
-    super.initState();
-    // Daftarkan listener untuk memicu rebuild saat teks berubah
-    widget.controller.addListener(_rebuild);
-  }
-
-  @override
-  void dispose() {
-    widget.controller.removeListener(_rebuild);
-    super.dispose();
-  }
-
-  /// Memicu rebuild widget agar UI selalu sinkron dengan isi teks.
-  void _rebuild() => setState(() {});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: widget.controller,
-      focusNode: widget.focusNode,
-      maxLines: null,
-      minLines: 4,
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: Color(0xFF2F241D),
-        height: 1.6,
-      ),
-      decoration: InputDecoration(
-        hintText:
-            'Tulis catatan...\nGunakan **teks** untuk tebal, _teks_ untuk miring.',
-        hintStyle: const TextStyle(
-          color: Color(0xFF9E8E7E),
-          fontSize: 13,
-          height: 1.6,
-        ),
-        filled: true,
-        fillColor: const Color(0xFFFCF8F1),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFD8CDBE)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFD8CDBE), width: 1),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF8A5A44), width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.all(14),
-      ),
-    );
-  }
-}
-
 /// TextField bergaya khusus Penote untuk input satu baris (judul, lokasi, dll).
 ///
 /// Memiliki tampilan yang konsisten dengan desain aplikasi: rounded corner,
@@ -854,6 +689,614 @@ class _PenoteTextField extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
+        ),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CanvasScreen — Halaman edit detail lengkap sebuah Aktifitas.
+//
+// Dipindahkan dari canvas_screen.dart ke sini agar semua kode yang
+// berhubungan dengan aktifitas berada dalam satu file.
+// ══════════════════════════════════════════════════════════════════════════════
+
+/// Halaman Canvas — tampilan edit detail lengkap sebuah Aktifitas.
+///
+/// Memungkinkan user mengubah judul, lokasi, waktu, dan catatan
+/// aktifitas dalam tampilan full-screen yang lebih luas dari modal.
+class CanvasScreen extends StatefulWidget {
+  const CanvasScreen({super.key, required this.task});
+
+  /// Aktifitas yang akan diedit di halaman ini.
+  final PenoteTask task;
+
+  @override
+  State<CanvasScreen> createState() => _CanvasScreenState();
+}
+
+/// State dari [CanvasScreen] yang mengelola semua controller dan logika edit.
+class _CanvasScreenState extends State<CanvasScreen> {
+  /// Controller untuk field input judul aktifitas.
+  late final TextEditingController _titleCtrl;
+
+  /// Controller untuk field input lokasi aktifitas.
+  late final TextEditingController _locationCtrl;
+
+  /// Controller untuk field input catatan aktifitas.
+  late final TextEditingController _notesCtrl;
+
+  /// FocusNode untuk field catatan, digunakan saat menerapkan format teks.
+  late final FocusNode _notesFocus;
+
+  /// Waktu aktifitas yang sedang dipilih (gabungan tanggal + jam).
+  late DateTime _scheduledAt;
+
+  /// Menginisialisasi semua controller dengan data dari aktifitas yang diteruskan.
+  @override
+  void initState() {
+    super.initState();
+    _titleCtrl = TextEditingController(text: widget.task.title);
+    _locationCtrl = TextEditingController(text: widget.task.location);
+    _notesCtrl = TextEditingController(text: widget.task.notes ?? '');
+    _notesFocus = FocusNode();
+    _scheduledAt = widget.task.scheduledAt;
+  }
+
+  /// Membebaskan semua controller dan focus node dari memori.
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _locationCtrl.dispose();
+    _notesCtrl.dispose();
+    _notesFocus.dispose();
+    super.dispose();
+  }
+
+  /// Membuka date picker dan memperbarui bagian tanggal dari [_scheduledAt].
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _scheduledAt,
+      firstDate: DateTime.now().subtract(const Duration(days: 30)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.light(primary: Color(0xFF8A5A44)),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      setState(
+        () => _scheduledAt = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          _scheduledAt.hour,
+          _scheduledAt.minute,
+        ),
+      );
+    }
+  }
+
+  /// Membuka time picker dan memperbarui bagian jam dari [_scheduledAt].
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_scheduledAt),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.light(primary: Color(0xFF8A5A44)),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      setState(
+        () => _scheduledAt = DateTime(
+          _scheduledAt.year,
+          _scheduledAt.month,
+          _scheduledAt.day,
+          picked.hour,
+          picked.minute,
+        ),
+      );
+    }
+  }
+
+  /// Membungkus teks yang dipilih dengan [prefix] dan [suffix].
+  /// Digunakan untuk format **bold** dan _italic_.
+  void _wrapSelection(String prefix, String suffix) {
+    final ctrl = _notesCtrl;
+    final sel = ctrl.selection;
+    final text = ctrl.text;
+    if (!sel.isValid) return;
+    final before = text.substring(0, sel.start);
+    final selected = text.substring(sel.start, sel.end);
+    final after = text.substring(sel.end);
+    final newText = '$before$prefix$selected$suffix$after';
+    final newStart = sel.start + prefix.length;
+    ctrl.value = ctrl.value.copyWith(
+      text: newText,
+      selection: TextSelection(
+        baseOffset: newStart,
+        extentOffset: newStart + selected.length,
+      ),
+    );
+    _notesFocus.requestFocus();
+  }
+
+  /// Menambahkan bullet point (• ) di awal baris. Toggle jika sudah ada.
+  void _insertBullet() {
+    final ctrl = _notesCtrl;
+    final sel = ctrl.selection;
+    final text = ctrl.text;
+    if (!sel.isValid) {
+      final newText = '${text.isEmpty ? '' : '$text\n'}• ';
+      ctrl.value = ctrl.value.copyWith(
+        text: newText,
+        selection: TextSelection.collapsed(offset: newText.length),
+      );
+      _notesFocus.requestFocus();
+      return;
+    }
+    final before = text.substring(0, sel.start);
+    final selected = text.substring(sel.start, sel.end);
+    final after = text.substring(sel.end);
+    if (selected.isEmpty) {
+      final lineStart = before.lastIndexOf('\n') + 1;
+      final linePrefix = before.substring(lineStart);
+      if (linePrefix.startsWith('• ')) {
+        final newBefore =
+            before.substring(0, lineStart) + linePrefix.substring(2);
+        ctrl.value = ctrl.value.copyWith(
+          text: '$newBefore$after',
+          selection: TextSelection.collapsed(offset: newBefore.length),
+        );
+      } else {
+        final newBefore = '${before.substring(0, lineStart)}• $linePrefix';
+        ctrl.value = ctrl.value.copyWith(
+          text: '$newBefore$after',
+          selection: TextSelection.collapsed(offset: newBefore.length),
+        );
+      }
+    } else {
+      final bulleted = selected
+          .split('\n')
+          .map((l) => l.startsWith('• ') ? l : '• $l')
+          .join('\n');
+      ctrl.value = ctrl.value.copyWith(
+        text: '$before$bulleted$after',
+        selection: TextSelection(
+          baseOffset: sel.start,
+          extentOffset: sel.start + bulleted.length,
+        ),
+      );
+    }
+    _notesFocus.requestFocus();
+  }
+
+  /// Memvalidasi input, menyimpan perubahan ke task, dan menutup halaman.
+  void _save() {
+    final title = _titleCtrl.text.trim();
+    final location = _locationCtrl.text.trim();
+    if (title.isEmpty || location.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Judul dan tempat aktifitas wajib diisi.'),
+          backgroundColor: const Color(0xFFC94F4F),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      return;
+    }
+    widget.task.title = title;
+    widget.task.location = location;
+    widget.task.notes = _notesCtrl.text;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Detail aktifitas berhasil disimpan.'),
+        backgroundColor: const Color(0xFF4F9D69),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+    Navigator.of(context).pop(widget.task);
+  }
+
+  /// Membangun tampilan Canvas dengan AppBar, form detail, dan tombol simpan.
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5EFE6),
+      appBar: _buildAppBar(context),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _StatusBanner(task: widget.task),
+              const SizedBox(height: 20),
+              _DetailCard(
+                children: [
+                  _CanvasSectionLabel('Judul Aktifitas'),
+                  const SizedBox(height: 8),
+                  _CanvasTextField(
+                    controller: _titleCtrl,
+                    hint: 'Nama aktifitas',
+                    icon: Icons.title_rounded,
+                  ),
+                  const SizedBox(height: 16),
+                  _CanvasSectionLabel('Tempat Aktifitas'),
+                  const SizedBox(height: 8),
+                  _CanvasTextField(
+                    controller: _locationCtrl,
+                    hint: 'Lokasi aktifitas',
+                    icon: Icons.location_on_outlined,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _DetailCard(
+                children: [
+                  _CanvasSectionLabel('Waktu Aktifitas'),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _PickerTile(
+                          icon: Icons.calendar_today_rounded,
+                          label: 'Tanggal',
+                          value:
+                              '${_scheduledAt.day}/${_scheduledAt.month}/${_scheduledAt.year}',
+                          onTap: _pickDate,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _PickerTile(
+                          icon: Icons.access_time_rounded,
+                          label: 'Jam',
+                          value:
+                              '${_scheduledAt.hour.toString().padLeft(2, '0')}:${_scheduledAt.minute.toString().padLeft(2, '0')}',
+                          onTap: _pickTime,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _DetailCard(
+                children: [
+                  _CanvasSectionLabel('Catatan Tambahan'),
+                  const SizedBox(height: 10),
+                  // Toolbar dari notes_helper.dart
+                  NotesFormattingToolbar(
+                    onBold: () => _wrapSelection('**', '**'),
+                    onItalic: () => _wrapSelection('_', '_'),
+                    onBullet: _insertBullet,
+                  ),
+                  const SizedBox(height: 8),
+                  // Editor dari notes_helper.dart
+                  RichNotesEditor(
+                    controller: _notesCtrl,
+                    focusNode: _notesFocus,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _save,
+                  icon: const Icon(Icons.save_rounded, size: 20),
+                  label: const Text('SIMPAN DETAIL'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: const Color(0xFF8A5A44),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Membangun AppBar Canvas dengan tombol Simpan di kanan.
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: const Color(0xFFFFF6E5),
+      elevation: 0,
+      leading: IconButton(
+        onPressed: () => Navigator.of(context).pop(),
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: Color(0xFF2F241D),
+          size: 20,
+        ),
+      ),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Detail Aktifitas',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF2F241D),
+            ),
+          ),
+          Text(
+            'Canvas Editor',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: const Color(0xFF6E6258)),
+          ),
+        ],
+      ),
+      actions: [
+        Container(
+          margin: const EdgeInsets.only(right: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFF8A5A44),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: GestureDetector(
+            onTap: _save,
+            child: const Text(
+              'Simpan',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Widget pendukung Canvas ───────────────────────────────────────────────────
+
+/// Banner status aktifitas: selesai (hijau), terlambat (merah), atau rencana (coklat).
+class _StatusBanner extends StatelessWidget {
+  const _StatusBanner({required this.task});
+  final PenoteTask task;
+
+  @override
+  Widget build(BuildContext context) {
+    final isCompleted = task.isCompleted;
+    final isLate = task.scheduledAt.isBefore(DateTime.now()) && !isCompleted;
+    Color bgColor;
+    Color textColor;
+    IconData iconData;
+    String label;
+    if (isCompleted) {
+      bgColor = const Color(0xFFDEF5E9);
+      textColor = const Color(0xFF2E7D50);
+      iconData = Icons.check_circle_rounded;
+      label = 'Aktifitas telah selesai';
+    } else if (isLate) {
+      bgColor = const Color(0xFFFFE4D3);
+      textColor = const Color(0xFFC94F4F);
+      iconData = Icons.warning_amber_rounded;
+      label = 'Aktifitas sudah melewati waktu';
+    } else {
+      bgColor = const Color(0xFFF7E9CF);
+      textColor = const Color(0xFF8A5A44);
+      iconData = Icons.pending_actions_rounded;
+      label = 'Aktifitas dalam rencana';
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(iconData, color: textColor, size: 18),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: TextStyle(
+              color: textColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Kartu kontainer dengan rounded corner dan shadow untuk mengelompokkan konten.
+class _DetailCard extends StatelessWidget {
+  const _DetailCard({required this.children});
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFDF8),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
+      ),
+    );
+  }
+}
+
+/// Label section kecil dalam Canvas dengan gaya teks abu-abu berukuran kecil.
+class _CanvasSectionLabel extends StatelessWidget {
+  const _CanvasSectionLabel(this.label);
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+        fontWeight: FontWeight.w700,
+        fontSize: 12,
+        color: const Color(0xFF6E6258),
+        letterSpacing: 0.4,
+      ),
+    );
+  }
+}
+
+/// TextField bergaya Canvas untuk input satu atau multi baris.
+class _CanvasTextField extends StatelessWidget {
+  const _CanvasTextField({
+    required this.controller,
+    required this.hint,
+    required this.icon,
+    this.maxLines = 1,
+  });
+  final TextEditingController controller;
+  final String hint;
+  final IconData icon;
+  final int maxLines;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFF2F241D),
+      ),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: Color(0xFF6E6258), fontSize: 13),
+        filled: true,
+        fillColor: const Color(0xFFFCF8F1),
+        prefixIcon: maxLines == 1
+            ? Icon(icon, color: const Color(0xFF8A5A44), size: 20)
+            : null,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFD8CDBE)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFD8CDBE), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFF8A5A44), width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+      ),
+    );
+  }
+}
+
+/// Tile yang bisa diketuk untuk memilih tanggal atau jam di halaman Canvas.
+class _PickerTile extends StatelessWidget {
+  const _PickerTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  /// Ikon yang ditampilkan di sebelah kiri tile.
+  final IconData icon;
+
+  /// Label kecil di atas nilai (misalnya "Tanggal" atau "Jam").
+  final String label;
+
+  /// Nilai yang saat ini dipilih untuk ditampilkan.
+  final String value;
+
+  /// Callback ketika tile diketuk.
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7E9CF),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFD8CDBE), width: 1),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: const Color(0xFF8A5A44)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF6E6258),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF2F241D),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 16,
+              color: Color(0xFF8A5A44),
+            ),
+          ],
         ),
       ),
     );
